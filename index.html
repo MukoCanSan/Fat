@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
-    <title>Okey Pro: İdeal Boyutlar</title>
+    <title>Okey Pro: Makinist</title>
     <style>
         /* --- GENEL AYARLAR --- */
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
@@ -98,4 +98,402 @@
         .istaka-izgara {
             display: grid; grid-template-columns: repeat(12, 1fr); 
             grid-template-rows: 1fr 1fr; gap: 4px; 
-            height: 100%; max-width: 800px; margin: 0
+            height: 100%; max-width: 800px; margin: 0 auto; width: 100%;
+        }
+
+        .yuva {
+            background: rgba(0,0,0,0.25); border-radius: 5px; 
+            border: 1px dashed rgba(255,255,255,0.05); position: relative; cursor: pointer;
+        }
+        .yuva.hedef-bekleniyor { border: 1px dashed #f1c40f; background: rgba(241, 196, 15, 0.1); animation: pulse-yellow 1.5s infinite;}
+        @keyframes pulse-yellow { 0%{box-shadow: 0 0 0 rgba(241,196,15,0);} 50%{box-shadow: 0 0 8px rgba(241,196,15,0.5);} 100%{box-shadow: 0 0 0 rgba(241,196,15,0);} }
+        .yuva.secili-hedef { background: rgba(52, 152, 219, 0.2); border: 1px dashed #3498db; }
+
+        /* Istaka Taşları */
+        .tas { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, #fffcf0 0%, #e8e2be 100%); 
+            border-radius: 5px; display: flex; justify-content: center; align-items: center; 
+            font-weight: 800; font-size: 22px; 
+            border: 1px solid #999; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); 
+            transition: all 0.1s ease; 
+        }
+        .tas.secili { transform: translateY(-6px); border: 2px solid #3498db; box-shadow: 0 8px 12px rgba(0,0,0,0.7); z-index: 10; }
+        
+        .sari { color: #d35400; } .mavi { color: #1e3a8a; } .siyah { color: #111; } .kirmizi { color: #c0392b; }
+        .sahte { color: #16a085; font-size: 24px; }
+        .islek-okey::after { content: ''; position: absolute; bottom: 3px; left: 15%; width: 70%; height: 4px; background-color: #e74c3c; border-radius: 2px; }
+
+        /* --- KONTROL PANELİ --- */
+        .kontrol-paneli {
+            width: 120px; background: #0f0f0f; padding: 8px;
+            display: flex; flex-direction: column; gap: 6px; justify-content: center;
+            border-left: 1px solid #222; flex-shrink: 0;
+            box-shadow: -3px 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .btn { 
+            border: none; padding: 10px 4px; border-radius: 6px; 
+            font-weight: 700; font-size: 11px; color: white; cursor: pointer; 
+            text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            display: flex; justify-content: center; align-items: center; text-align: center;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-mavi { background: linear-gradient(180deg, #2980b9 0%, #1c5980 100%); flex: 1;}
+        .btn-at { background: linear-gradient(180deg, #e67e22 0%, #d35400 100%); flex: 1;}
+        .btn-bitir { background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%); font-size: 13px; padding: 12px 4px; flex: 1.2; border: 1px solid #2ecc71;}
+
+        /* --- MODALLAR --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; 
+            align-items: center; z-index: 100; flex-direction: column; backdrop-filter: blur(3px);
+        }
+        .modal-kutu {
+            background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+            padding: 25px; border-radius: 12px; text-align: center;
+            border: 2px solid #f1c40f; box-shadow: 0 0 30px rgba(241, 196, 15, 0.4); max-width: 80%;
+        }
+        .modal-baslik { font-size: 24px; font-weight: 800; margin-bottom: 10px;}
+        .modal-mesaj { font-size: 14px; margin-bottom: 20px; color: #ddd; line-height: 1.4;}
+        .btn-modal { background: #f1c40f; color: #111; font-size: 14px; padding: 10px 24px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer;}
+        .spinner { width: 35px; height: 35px; border: 4px solid #fff; border-bottom-color: #f1c40f; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
+    </style>
+</head>
+<body>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyATnnjg9cVazasAp9PqsQZF7P9hYAv1rHI",
+        authDomain: "fatt-954b5.firebaseapp.com",
+        projectId: "fatt-954b5",
+        storageBucket: "fatt-954b5.firebasestorage.app",
+        messagingSenderId: "347182621457",
+        appId: "1:347182621457:web:bacb463167c0f125afe2b0",
+        measurementId: "G-GB0RLL14YT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+</script>
+
+<div id="dikey-uyari">
+    <div class="dondur-ikon">📱</div>
+    İdeal oyun deneyimi için<br>telefonunuzu yan çevirin.
+</div>
+
+<div id="oyun-konteyner">
+    
+    <div class="ust-bilgi">
+        <span id="durum-metni" style="color: #2ecc71;">Oyun Yükleniyor...</span>
+        <span id="kalan-deste">Deste: 106</span>
+    </div>
+
+    <div class="masa">
+        <div class="masa-grid">
+            <div class="oyuncu-kutusu" id="kutu-2" style="grid-column: 2; grid-row: 1;">
+                <div class="oyuncu-isim">Bot 2 (Karşı)</div>
+                <div id="cop-2" class="tas-mini bos"></div>
+            </div>
+            <div class="oyuncu-kutusu" id="kutu-1" style="grid-column: 1; grid-row: 2;">
+                <div class="oyuncu-isim">Bot 1 (Sol)</div>
+                <div id="cop-1" class="tas-mini bos"></div>
+            </div>
+            <div class="orta-alan">
+                <div style="text-align: center;">
+                    <div class="oyuncu-isim">Gösterge</div>
+                    <div id="gosterge"></div>
+                </div>
+                <div style="text-align: center;" id="deste-alani" onclick="masaTasSec(this, 'deste')">
+                    <div class="oyuncu-isim" style="color:#2ecc71;">DESTE ÇEK</div>
+                    <div id="ortadaki-deste" class="tas-mini tas-ters"></div>
+                </div>
+            </div>
+            <div class="oyuncu-kutusu" id="kutu-3" style="grid-column: 3; grid-row: 2;" onclick="masaTasSec(this, 'cop')">
+                <div class="oyuncu-isim" style="color:#f1c40f;">Bot 3 (Yandan)</div>
+                <div id="cop-3" class="tas-mini bos"></div>
+            </div>
+            <div class="oyuncu-kutusu" id="kutu-0" style="grid-column: 2; grid-row: 3;" onclick="masayaTasiBirak()">
+                <div class="oyuncu-isim" style="color:#e74c3c;">Sen (Çöpe At)</div>
+                <div id="cop-0" class="tas-mini bos"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alt-bolum">
+        <div class="istaka-alani">
+            <div class="istaka-izgara" id="istaka"></div>
+        </div>
+
+        <div class="kontrol-paneli">
+            <button class="btn btn-mavi" onclick="otomatikSirala()">Otomatik Diz</button>
+            <button class="btn btn-at" onclick="masayaTasiBirak()">Seçileni At</button>
+            <button class="btn btn-bitir" onclick="bitir()">ELİ BİTİR</button>
+        </div>
+    </div>
+
+</div>
+
+<div id="dagitmaModal" class="modal-overlay">
+    <div class="spinner"></div>
+    <h2 style="color:white; margin-top: 15px; font-size:18px;">Taşlar Dağıtılıyor...</h2>
+</div>
+<div id="sonucModal" class="modal-overlay">
+    <div class="modal-kutu">
+        <div id="sonuc-baslik" class="modal-baslik">KAZANDIN!</div>
+        <div id="sonuc-mesaj" class="modal-mesaj">Harika bir el dizdin.</div>
+        <button class="btn-modal" onclick="init()">YENİDEN OYNA</button>
+    </div>
+</div>
+
+<script>
+    const renkler = ['sari', 'mavi', 'siyah', 'kirmizi'];
+    let deste = [], rack = new Array(24).fill(null), botElleri = [[], [], []], copler = [[], [], [], []];
+    let gosterge, okeyTas;
+    let durum = { aktifOyuncu: 0, hamleAsamasi: 0, seciliIndex: -1, oyunAktif: false, seciliMasaTasi: null };
+
+    function init() {
+        document.getElementById('sonucModal').style.display = 'none';
+        document.getElementById('dagitmaModal').style.display = 'flex';
+        
+        deste = []; copler = [[], [], [], []]; rack.fill(null); botElleri = [[], [], []];
+        durum = { aktifOyuncu: 0, hamleAsamasi: 0, seciliIndex: -1, oyunAktif: true, seciliMasaTasi: null };
+
+        for(let r=0; r<2; r++) {
+            renkler.forEach(c => { for(let i=1; i<=13; i++) deste.push({renk: c, sayi: i, isSahte: false}); });
+            deste.push({renk: 'siyah', sayi: '⭐', isSahte: true});
+        }
+        for(let k=0; k<2; k++) {
+            for(let i=deste.length-1; i>0; i--) {
+                let j = Math.floor(Math.random()*(i+1));
+                [deste[i], deste[j]] = [deste[j], deste[i]];
+            }
+        }
+        gosterge = deste.pop();
+        while(gosterge.isSahte) { deste.unshift(gosterge); gosterge = deste.pop(); }
+        okeyTas = {renk: gosterge.renk, sayi: gosterge.sayi === 13 ? 1 : gosterge.sayi + 1};
+        
+        setTimeout(() => {
+            for(let i=0; i<15; i++) rack[i] = deste.pop();
+            for(let bot=0; bot<3; bot++) { for(let i=0; i<14; i++) botElleri[bot].push(deste.pop()); }
+            
+            document.getElementById('dagitmaModal').style.display = 'none';
+            durum.hamleAsamasi = 1; 
+            otomatikSirala(); 
+            siraGuncelleUI(); 
+        }, 1200); 
+    }
+
+    function islekMi(t) { return t && !t.isSahte && t.renk === okeyTas.renk && t.sayi === okeyTas.sayi; }
+    function htmlTasMini(t) {
+        if(!t) return `<div class="tas-mini bos"></div>`;
+        return `<div class="tas-mini ${t.isSahte ? 'sahte' : t.renk}">${t.isSahte ? '⭐' : t.sayi}</div>`;
+    }
+
+    function render() {
+        if(!durum.oyunAktif) return;
+        const istakaDiv = document.getElementById('istaka');
+        istakaDiv.innerHTML = '';
+        
+        for(let i=0; i<24; i++) {
+            let t = rack[i];
+            let extraClass = "";
+            if (durum.seciliMasaTasi !== null && durum.aktifOyuncu === 0 && durum.hamleAsamasi === 0) {
+                extraClass = "hedef-bekleniyor";
+            } else if (durum.seciliIndex === i) {
+                extraClass = "secili-hedef";
+            }
+
+            let html = `<div class="yuva ${extraClass}" onclick="yuvayaTikla(${i})">`;
+            if (t) {
+                let cl = `tas ${t.isSahte ? 'sahte' : t.renk} ${islekMi(t) ? 'islek-okey' : ''} ${i === durum.seciliIndex ? 'secili' : ''}`;
+                html += `<div class="${cl}">${t.isSahte ? '⭐' : t.sayi}</div>`;
+            }
+            html += `</div>`;
+            istakaDiv.innerHTML += html;
+        }
+
+        document.getElementById('gosterge').innerHTML = htmlTasMini(gosterge);
+        document.getElementById('kalan-deste').innerText = `Deste: ${deste.length}`;
+
+        for(let i=0; i<4; i++) {
+            let sonTas = copler[i].length > 0 ? copler[i][copler[i].length - 1] : null;
+            document.getElementById(`cop-${i}`).outerHTML = htmlTasMini(sonTas).replace('class="', `id="cop-${i}" class="`);
+        }
+        
+        let desteTas = document.getElementById('ortadaki-deste');
+        if (durum.seciliMasaTasi === 'deste') desteTas.classList.add('secili-masa-tasi');
+        else desteTas.classList.remove('secili-masa-tasi');
+        
+        let cop3Tas = document.getElementById('cop-3');
+        if (durum.seciliMasaTasi === 'cop' && cop3Tas) cop3Tas.classList.add('secili-masa-tasi');
+        else if (cop3Tas) cop3Tas.classList.remove('secili-masa-tasi');
+
+        document.getElementById('deste-alani').className = (durum.aktifOyuncu === 0 && durum.hamleAsamasi === 0 && !durum.seciliMasaTasi) ? 'vurgu-cek' : '';
+        document.getElementById('kutu-3').className = (durum.aktifOyuncu === 0 && durum.hamleAsamasi === 0 && copler[3].length > 0 && !durum.seciliMasaTasi) ? 'oyuncu-kutusu vurgu-cek' : 'oyuncu-kutusu';
+        document.getElementById('kutu-0').className = (durum.aktifOyuncu === 0 && durum.hamleAsamasi === 1 && durum.seciliIndex !== -1) ? 'oyuncu-kutusu vurgu-birak' : 'oyuncu-kutusu';
+    }
+
+    function siraGuncelleUI() {
+        for(let i=0; i<4; i++) document.getElementById(`kutu-${i}`).classList.remove('aktif-oyuncu');
+        document.getElementById(`kutu-${durum.aktifOyuncu}`).classList.add('aktif-oyuncu');
+
+        let msgDiv = document.getElementById('durum-metni');
+        if(durum.aktifOyuncu === 0) {
+            msgDiv.style.color = "#2ecc71";
+            if (durum.hamleAsamasi === 0) {
+                if (durum.seciliMasaTasi) {
+                    msgDiv.innerText = "Taşı Koymak İçin Istakaya Dokun";
+                    msgDiv.style.color = "#f1c40f";
+                } else {
+                    msgDiv.innerText = "Sıra Sende: Desteden Taş Çek";
+                }
+            } else {
+                msgDiv.innerText = "Istakadan Seç ve Kendi Çöpüne At";
+            }
+        } else {
+            msgDiv.innerText = `Bot ${durum.aktifOyuncu} Oynuyor...`;
+            msgDiv.style.color = "#e74c3c";
+        }
+        render();
+    }
+
+    function yuvayaTikla(index) {
+        if (durum.seciliMasaTasi !== null && durum.aktifOyuncu === 0 && durum.hamleAsamasi === 0) {
+            let cekilen = null;
+            if (durum.seciliMasaTasi === 'deste') {
+                if (deste.length === 0) return oyunBerabere();
+                cekilen = deste.pop();
+            } else if (durum.seciliMasaTasi === 'cop') {
+                if (copler[3].length === 0) return; 
+                cekilen = copler[3].pop();
+            }
+
+            if (rack[index] !== null) {
+                let bos = rack.indexOf(null);
+                if (bos !== -1) rack[bos] = rack[index];
+            }
+            rack[index] = cekilen; 
+            durum.seciliMasaTasi = null; durum.hamleAsamasi = 1; durum.seciliIndex = -1;
+            if(navigator.vibrate) navigator.vibrate(20);
+            siraGuncelleUI(); return;
+        }
+
+        if (durum.seciliIndex === -1) {
+            if (rack[index] !== null) { durum.seciliIndex = index; if(navigator.vibrate) navigator.vibrate(15); }
+        } else if (durum.seciliIndex === index) {
+            durum.seciliIndex = -1; 
+        } else {
+            let temp = rack[durum.seciliIndex];
+            rack[durum.seciliIndex] = rack[index];
+            rack[index] = temp;
+            durum.seciliIndex = -1; 
+            if(navigator.vibrate) navigator.vibrate(15);
+        }
+        render(); siraGuncelleUI();
+    }
+
+    function masaTasSec(element, kaynak) {
+        if (durum.aktifOyuncu !== 0 || durum.hamleAsamasi !== 0) return;
+        if(kaynak === 'cop' && copler[3].length === 0) return;
+        
+        durum.seciliMasaTasi = (durum.seciliMasaTasi === kaynak) ? null : kaynak;
+        if(navigator.vibrate) navigator.vibrate(15);
+        siraGuncelleUI(); 
+    }
+
+    function otomatikSirala() {
+        let temiz = rack.filter(t => t !== null);
+        temiz.sort((a,b) => {
+            if(a.isSahte) return 1; if(b.isSahte) return -1;
+            if (a.sayi === b.sayi) return renkler.indexOf(a.renk) - renkler.indexOf(b.renk);
+            return a.sayi - b.sayi;
+        });
+        rack.fill(null);
+        let curSlot = 0;
+        for(let i=0; i<temiz.length; i++) {
+            rack[curSlot] = temiz[i];
+            if((i+1) % 4 === 0) curSlot += 2; else curSlot += 1; 
+            if(curSlot >= 24) curSlot = rack.indexOf(null); 
+        }
+        durum.seciliIndex = -1; render();
+    }
+
+    function masayaTasiBirak() {
+        if (durum.aktifOyuncu !== 0 || durum.hamleAsamasi !== 1) return;
+        if (durum.seciliIndex === -1 || rack[durum.seciliIndex] === null) {
+            return alert("Önce ıstakandan atmak istediğin bir taşı seç.");
+        }
+        
+        copler[0].push(rack[durum.seciliIndex]);
+        rack[durum.seciliIndex] = null;
+        
+        durum.seciliIndex = -1; durum.aktifOyuncu = 1; durum.hamleAsamasi = 0;
+        siraGuncelleUI(); setTimeout(() => botOyna(1), 700);
+    }
+
+    function botOyna(botId) {
+        if(!durum.oyunAktif) return;
+        let botEli = botElleri[botId - 1], oncekiCop = botId === 1 ? copler[0] : copler[botId - 1];
+
+        if(oncekiCop.length > 0 && Math.random() < 0.15) botEli.push(oncekiCop.pop());
+        else {
+            if(deste.length === 0) return oyunBerabere();
+            botEli.push(deste.pop());
+        }
+        render(); 
+
+        setTimeout(() => {
+            if(!durum.oyunAktif) return;
+            
+            let bitmeIhtimali = deste.length < 40 ? 0.05 : 0;
+            if(deste.length < 15) bitmeIhtimali = 0.20;
+            if(Math.random() < bitmeIhtimali) return oyunuBitir(botId);
+
+            let atilan = botEli.splice(Math.floor(Math.random() * botEli.length), 1)[0];
+            copler[botId].push(atilan);
+            
+            durum.aktifOyuncu = (botId % 4 === 3) ? 0 : botId + 1;
+            siraGuncelleUI();
+            
+            if (durum.aktifOyuncu !== 0) setTimeout(() => botOyna(durum.aktifOyuncu), 900);
+        }, 700); 
+    }
+
+    function bitir() {
+        if (durum.aktifOyuncu !== 0 || durum.hamleAsamasi !== 1 || durum.seciliIndex === -1) {
+            return alert("Bitebilmek için elinde 15 taş olmalı ve bitiş taşını ıstakadan seçmiş olmalısın.");
+        }
+        if(rack.filter(t => t !== null).length !== 15) return alert("Eksik taşın var! Gruplarını tamamlamadan bitemezsin.");
+        oyunuBitir(0); 
+    }
+
+    function oyunuBitir(kazananId) {
+        durum.oyunAktif = false;
+        const modal = document.getElementById('sonucModal'), baslik = document.getElementById('sonuc-baslik'), mesaj = document.getElementById('sonuc-mesaj');
+        if(kazananId === 0) {
+            baslik.innerText = "🏆 OKEY BİTTİN! 🏆"; baslik.style.color = "#2ecc71";
+            mesaj.innerText = "Mükemmel oynadın! Tüm botları yendin. Taş dizilimin kusursuzdu.";
+        } else {
+            baslik.innerText = `💥 BOT ${kazananId} BİTTİ! 💥`; baslik.style.color = "#e74c3c";
+            mesaj.innerText = `Maalesef Bot ${kazananId} elini senden önce topladı.`;
+        }
+        modal.style.display = 'flex';
+    }
+
+    function oyunBerabere() {
+        durum.oyunAktif = false;
+        document.getElementById('sonucModal').style.display = 'flex';
+        document.getElementById('sonuc-baslik').innerText = "⚖️ BERABERE ⚖️";
+        document.getElementById('sonuc-baslik').style.color = "#f1c40f";
+        document.getElementById('sonuc-mesaj').innerText = "Ortada taş bitti, kimse elini açamadı!";
+    }
+
+    init();
+</script>
+</body>
+</html>
